@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Institution Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI';
+    background: #f5f7fb;
+}
+
+.navbar {
+    height: 60px;
+    background: linear-gradient(to right, #4CAF50, #2E7D32);
+     color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px; 
+}
+
+.logout-btn {
+    background: red;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.sidebar {
+    
+    width: 220px;
+    height: 100vh;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    background: #2c3e50;
+}
+
+.sidebar a {
+    display: block;
+    color: white;
+    padding: 12px;
+    text-decoration: none;
+    
+}
+
+.sidebar a:hover {
+    background: #34495e;
+}
+
+.content {
+    margin-left: 220px;
+    margin-top: 70px;
+    padding: 20px;
+}
+
+.center-box {
+    max-width: 500px;
+    margin: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+.qr-img {
+    width: 60px; 
+    border: 1px solid #ddd;
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+<nav class="navbar" style="position: fixed; top: 0; width: 100%; z-index: 1000;">
+  <h4>Institution Dashboard</h4><button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- <div class="topbar"style="position: fixed; top: 0; width: 100%; z-index: 1000;> Institution Dashboard <button class="logout-btn" onclick="logout()">Logout</button></div> -->
+
+<div class="sidebar" >
+    <a href="#" onclick="showSection('studentForm')">Student Registration</a>
+    <a  href = "#"onclick="loadStudents()">Student Details</a>
+    <a  href ="#"onclick="loadInstitution()">Institution Details</a>
+</div>
+
+<div class="content">
+    <div id="studentForm" class="center-box">
+        <h4 class="text-center">Student Registration</h4>
+        <div class="card p-3">
+            <label class="form-label">Name</label>
+            <input type="text" id="name" class="form-control mb-2" placeholder="Student Name" required>
+            <label class="form-label">Register Number</label>
+            <input type="text" id="regNo" class="form-control mb-2" placeholder="RegNo" required>
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="dob" class="form-control mb-2"required>
+             <label class="form-label">Email</label>
+            <input type="email" id="email" class="form-control mb-2" placeholder="@gmail.com"required>
+            <label class="form-label">Department</label>     
+          <input type="text" id="department" class="form-control mb-3" placeholder="Department" required>
+            <button class="btn btn-success w-100" onclick="saveStudent()">Save & Next</button>
+        </div>
+    </div>
+
+    <div id="certificateForm" class="center-box hidden">
+        <div class="card p-3">
+            <h5 class="text-center">Upload Certificate</h5>
+            <label class="form-label"> upload</label>  
+            <input type="file" id="file" class="form-control mb-3">
+            <label class="form-label">FolioNumber</label>  
+            <input type="text" id="folioNo" class="form-control mb-2" placeholder="Folio Number">
+            <label class="form-label">Course</label>  
+            <input type="text" id="course" class="form-control mb-2" placeholder="eg:BCA,Bsc">
+            <button class="btn btn-primary w-100" onclick="uploadCertificate()">Upload</button>
+            <h6 id="msg" class="text-success text-center mt-3"></h6>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <div id="studentDetails" class="hidden">
+        <h4>Student Details</h4>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr><th>#</th><th>Name</th><th>RegNo</th><th>Folio</th><th>QR</th><th>Download</th><th>Action</th></tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+        </table>
+    </div>
+
+    <div id="institutionDetails" class="hidden">
+        <h4>Institution Details</h4>
+        <div class="card p-3">
+            <p><b>Name:</b> <span id="instName"></span></p>
+            <p><b>Code:</b> <span id="instCode"></span></p>
+            <p><b>Address:</b> <span id="instAddress"></span></p>
+            <p><b>Email:</b> <span id="instEmail"></span></p>
+        </div>
+    </div>
+</div>
+<script>
+let currentRegNo = "", lastCert = null;
+
+function showSection(id) {
+    ['studentForm', 'certificateForm', 'studentDetails', 'institutionDetails'].forEach(s => document.getElementById(s).classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+}
+
+function saveStudent() {
+    let student = { name: document.getElementById("name").value, regNo: document.getElementById("regNo").value, dob: document.getElementById("dob").value, email: document.getElementById("email").value, department: document.getElementById("department").value, institutionEmail: localStorage.getItem("instEmail") };
+    fetch("http://localhost:8080/auth/student/save", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(student) })
+    .then(res => res.json())
+    .then(data => { alert("Saved ✅"); currentRegNo = data.regNo; showSection("certificateForm"); });
+}
+
+function uploadCertificate() {
+    let formData = new FormData(); formData.append("file", document.getElementById("file").files[0]); 
+    formData.append("regNo", currentRegNo); 
+    formData.append("folioNo", document.getElementById("folioNo").value);
+    fetch("http://localhost:8080/auth/certificate/upload", { method: "POST", body: formData })
+    .then(res => res.json())
+    .then(data => { 
+        lastCert = data; 
+        document.getElementById("msg").innerHTML = `Uploaded Successfully ✅ <br> <a href="#" onclick="viewCert()">View Details</a>`; 
+    });
+}
+
+function viewCert() {
+    // Ippo QR scan panna Name, RegNo, Folio, Hash ellame varum
+    document.getElementById("preview").innerHTML = `
+        <div class="card p-2 mt-2">
+            <h6>QR Details Preview</h6>
+            <img src="data:image/png;base64,${lastCert.qrCodePath}" style="width:150px; display:block; margin:auto;"/>
+            <div class="text-start mt-2" style="font-size: 12px;">
+                <p><b>Name:</b> ${lastCert.name}</p>
+                <p><b>RegNo:</b> ${lastCert.regNo}</p>
+                <p><b>Folio:</b> ${lastCert.folioNo}</p>
+                <p><b>Hash:</b> ${lastCert.hash}</p>
+            </div>
+        <button class="btn btn-primary btn-sm mt-2" onclick="downloadCert(${lastCert.id})">Download Certificate</button> 
+        </div>`;
+}
+
+function loadStudents() {
+    showSection("studentDetails");
+    fetch("http://localhost:8080/auth/student/byInstitution?email=" + localStorage.getItem("instEmail"))
+    .then(res => res.json())
+    .then(data => {
+        let table = document.getElementById("studentTable"); table.innerHTML = "";
+        data.forEach((st, i) => {
+            fetch("http://localhost:8080/auth/certificate/byRegNo?regNo=" + st.regNo)
+            .then(res => res.json())
+            .then(certs => {
+                let c = certs[0];
+                table.innerHTML += `<tr>
+                    <td>${i+1}</td>
+                    <td>${st.name}</td>
+                    <td>${c ? c.regNo : st.regNo}</td>
+                    <td>${c ? c.folioNo : "-"}</td>
+                    <td>${c ? `<img src="data:image/png;base64,${c.qrCodePath}" class="qr-img"/>` : "-"}</td>
+                    <td>${c ? `<button class="btn btn-primary btn-sm" onclick="downloadCert(${c.id})">Download</button> ` : "-"}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editStudent('${st.regNo}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteStudent('${st.regNo}')">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        });
+    });
+}
+// 🔥 DOWNLOAD FUNCTION: Ithu thaan file-ai backend-la irunthu fetch pannum
+function downloadCert(id) {
+    if(!id) {
+        alert("Certificate ID not found!");
+        return;
+    }
+    // Backend API-ku direct-ah redirect pannum pothu download trigger aagum
+    window.location.href = `http://localhost:8080/auth/certificate/download/${id}`;
+}
+
+// Edit, Delete, Logout functions remain same...
+function deleteStudent(regNo) { if(confirm("Are you sure?")) { fetch("http://localhost:8080/auth/student/delete/" + regNo, {method: "DELETE"}).then(() => { alert("Deleted"); loadStudents(); }); } }
+function editStudent(regNo) { 
+    fetch("http://localhost:8080/auth/student/get/" + regNo)
+    .then(res => {
+        if(!res.ok)throw new Error("Student not found");
+        return res.json();
+    })
+    .then(st => {
+         showSection("studentForm");
+ document.getElementById("name").value = st.name; 
+ document.getElementById("regNo").value = st.regNo; 
+ document.getElementById("dob").value = st.dob; 
+ document.getElementById("email").value = st.email; 
+ document.getElementById("department").value = st.department; 
+ currentRegNo = st.regNo; });
+  }
+ 
+function loadInstitution() { showSection("institutionDetails"); fetch("http://localhost:8080/auth/institution/byEmail?email=" + localStorage.getItem("instEmail")).then(res => res.json()).then(data => { document.getElementById("instName").innerText = data.institutionName; document.getElementById("instCode").innerText = data.instCode; document.getElementById("instAddress").innerText = data.address; document.getElementById("instEmail").innerText = data.email; }); }
+function logout() { localStorage.clear(); window.location.href = "institutionlogin.html"; }
+</script>
+</body>
+</html>

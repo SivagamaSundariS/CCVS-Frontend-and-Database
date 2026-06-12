@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verifier Panel - CCVS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .back-btn {
+         text-decoration: none;
+         display: block;
+         text-align: center;
+         margin-top: 15px;
+         color:#333;
+        }
+        body { background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { max-width: 500px; margin: 50px auto; padding: 30px; border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h4 { font-weight: 700; color: #333; margin-bottom: 25px; }
+        
+        /* 🔥 STATUS STYLES */
+        #status {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .status-valid { background-color: #d1e7dd; color: #0f5132; border: 2px solid #0f5132; }
+        .status-invalid { background-color: #f8d7da; color: #842029; border: 2px solid #842029; }
+
+        .result-item { margin-bottom: 15px; border-bottom: 1px dashed #ddd; padding-bottom: 10px; }
+        .label { font-size: 0.9rem; color: #666; font-weight: 600; }
+        .value { font-size: 1.1rem; color: #000; font-weight: 700; display: block; }
+        
+        #qr { margin-top: 20px; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 10px; display: none; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card" id="loginDiv">
+        <h4 class="text-center">Verifier Login</h4>
+        <div class="mb-3">
+            <input id="vname" class="form-control" placeholder="Your Name">
+        </div>
+        <div class="mb-3">
+            <input id="vemail" class="form-control" placeholder="Your Email">
+        </div>
+        <button class="btn btn-primary w-100" onclick="login()">Enter Verifier Panel</button><br>
+        <a href="login.html" class="back-btn">⬅ Back</a>
+    </div>
+
+    <div class="card" id="verifyDiv" style="display:none">
+        <h4 class="text-center">Submit Certificate</h4>
+        <div class="mb-3">
+            <label class="form-label">Student Name (as on Certificate)</label>
+            <input id="snameInput" class="form-control" placeholder="Enter Name">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Upload Certificate Image</label>
+            <input type="file" id="fileInput" class="form-control" accept="image/*">
+        </div>
+        <button class="btn btn-success w-100 py-2" onclick="verifyCert()">Verify Now</button>
+        
+    </div>
+
+    <div class="card" id="resultDiv" style="display:none">
+        <h4 class="text-center">Verification Result</h4>
+        
+        <div class="text-center">
+            <span id="status"></span>
+        </div>
+
+        <div class="result-item">
+            <span class="label">STUDENT NAME</span>
+            <span id="sname" class="value"></span>
+        </div>
+        
+        <div class="result-item">
+            <span class="label">REGISTER NUMBER</span>
+            <span id="regno" class="value"></span>
+        </div>
+
+        <div class="text-center">
+            <img id="qr" width="200" alt="QR Code" />
+        </div>
+
+        <button class="btn btn-outline-dark w-100 mt-4" onclick="location.reload()">Verify Another</button>
+    
+    
+    </div>
+</div>
+
+<script>
+let verifierName = "";
+let verifierEmail = "";
+
+function login() {
+    verifierName = document.getElementById("vname").value;
+    verifierEmail = document.getElementById("vemail").value;
+    if(!verifierName || !verifierEmail) { alert("Please login first"); return; }
+    document.getElementById("loginDiv").style.display = "none";
+    document.getElementById("verifyDiv").style.display = "block";
+}
+
+async function verifyCert() {
+    const nameInput = document.getElementById("snameInput").value;
+    const file = document.getElementById("fileInput").files[0];
+
+    if(!nameInput || !file) { alert("Please provide both name and certificate file"); return; }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", nameInput);
+    formData.append("verifierName", verifierName);
+    formData.append("verifierEmail", verifierEmail);
+
+    try {
+        const response = await fetch("http://localhost:8080/auth/certificate/verifyByFile", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        console.log("Backend Data:", data);
+
+        // UI Updates
+        document.getElementById("verifyDiv").style.display = "none";
+        document.getElementById("resultDiv").style.display = "block";
+
+        const statusEl = document.getElementById("status");
+        const qrImg = document.getElementById("qr");
+
+        // 🔥 LOGIC: Backend status check
+        if (data.status === "VALID") {
+            statusEl.innerText = "VALID ✅";
+            statusEl.className = "status-valid";
+            
+            // ✅ QR Code Display (Base64 handle)
+            if (data.qrCodePath) {
+                qrImg.style.display = "block";
+                // Base64 format check (add prefix if missing)
+                qrImg.src = data.qrCodePath.startsWith("data:image") 
+                            ? data.qrCodePath 
+                            : "data:image/png;base64," + data.qrCodePath;
+            } else {
+                qrImg.style.display = "none";
+            }
+        } else {
+            statusEl.innerText = "INVALID ❌";
+            statusEl.className = "status-invalid";
+            qrImg.style.display = "none";
+        }
+
+        // Common Fields
+        document.getElementById("sname").innerText = data.name || nameInput;
+        document.getElementById("regno").innerText = data.regNo || "Not Detected";
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Server Connection Error!");
+    }
+}
+</script>
+
+</body>
+</html>

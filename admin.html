@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+}
+.navbar{
+  height:60px;
+}
+.sidebar{
+  width:220px;
+  height:100vh;
+  background:#2c3e50;
+  color:white;
+  top: 60px;
+  position:fixed;
+  padding-top:20px;
+}
+.sidebar a{
+  display:block;
+  color:white;
+  padding:10px;
+  text-decoration:none;
+  cursor:pointer;
+}
+.sidebar a:hover{
+  background:#34495e;
+}
+.content{
+  margin-left:220px;
+  margin-top: 60px;
+  padding:20px;
+}
+.card{
+  box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+.no-shadow-card{
+ border:2px solid #dee2e6;
+ box-shadow:none;
+ width: 480px;
+ background-color: #fff;
+   padding: 20px;
+   margin-bottom: 20px;
+   border-radius: 8px;
+}
+.logout-btn {
+    background: red;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar bg-dark text-white px-3" style="position: fixed; top: 0; width: 100%; z-index: 1000;">
+  <h4>Admin Dashboard</h4><button class="logout-btn" onclick="logout()">Logout</button>
+</nav>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <a onclick="showSection('dashboard')">Dashboard</a>
+  <a onclick="showSection('institution')">Institution Management</a>
+  <a onclick="showSection('student')">Student Management</a>
+  <a onclick="showSection('certificate')">Certificate Management</a>
+  <a onclick="showSection('verification')">Verification Requests</a>
+  <a onclick="showSection('audit')">Audit Logs</a>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <h3>Dashboard</h3>
+  <div class="row">
+    <div class="col-md-3"><div class="card p-3">Students <h4 id="totalStudents">0</h4></div></div>
+    <div class="col-md-3"><div class="card p-3">Institutions <h4 id="totalInstitutions">0</h4></div></div>
+    <div class="col-md-3"><div class="card p-3">Certificates <h4 id="totalCertificates">0</h4></div></div>
+  </div>
+</div>
+
+<!-- INSTITUTION -->
+<div id="institution" style="display:none">
+  <h3>Institution Management</h3>
+
+
+  <button class="btn btn-primary mb-3" onclick="showForm()">Add Institution</button>
+  <center>
+  <div id="formDiv" class="no-shadow-card"style="display:none; text-align:left" >
+    <label style="font-weight: lighter ;display: block; margin-bottom: 5px;">Institution Code</label>
+    <input id="code" placeholder="eg INST001" class="form-control mb-2">
+    <label style="font-weight: lighter;display: block; margin-bottom: 5px;">Institution Name</label>
+    <input id="instName" placeholder="" class="form-control mb-2">
+    <label style="font-weight: lighter ;display: block; margin-bottom: 5px;">Institution Email</label>
+    <input id="email" placeholder="@gmail" class="form-control mb-2">
+    <label style="font-weight: lighter ;display: block; margin-bottom: 5px;">Address</label>
+    <input id="address" placeholder="" class="form-control mb-2">
+    <label style="font-weight: lighter ;display: block; margin-bottom: 5px;">Password</label>
+    <input id="password" placeholder="" type="password" class="form-control mb-2">
+    <div style="text-align: center; margin-top: 15px;">
+    <button class="btn btn-success" onclick="addInstitution()">Submit</button>
+  </div>
+  <div id="successMsg" style="display:none; color: green;  margin-top: 10px; text-align: center;">
+    Institution Added Successfully!
+</div>
+  </div>
+  </center>
+  
+<br><br>
+  <table class="table table-bordered" style="border: 2px solid #dee2e6;">
+    <thead>
+      <tr>
+        <th>Code</th><th>Name</th><th>Email</th><th>Address</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="instTable"></tbody>
+  </table>
+</div>
+
+<!-- STUDENT -->
+<div id="student" style="display:none">
+  <h3>Student Management</h3>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th><th>RegNo</th><th>Email</th><th>Dept</th><th>Institution</th><th>DOB</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+</div>
+
+<!-- CERTIFICATE -->
+<div id="certificate" style="display:none">
+  <h3>Certificate Management</h3>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th><th>RegNo</th><th>Hash</th><th>QR</th><th>Download</th>
+      </tr>
+    </thead>
+    <tbody id="certTable"></tbody>
+  </table>
+</div>
+
+<!-- VERIFICATION -->
+<div id="verification" style="display:none">
+  <h3>Verification Requests</h3>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Verifier Email</th><th> VerifierName</th><th>StudentName</th><th>Institution</th><th>VerifiedAt</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="verifyTable"></tbody>
+  </table>
+</div>
+
+<!-- AUDIT -->
+<div id="audit" style="display:none">
+  <h3>Audit Logs</h3>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Institution Name</th><th>Verifier Name</th>
+      </tr>
+    </thead>
+    <tbody id="auditTable"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+
+// SECTION SWITCH
+function showSection(id){
+  document.querySelectorAll(".content > div").forEach(d=>d.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+// FORM SHOW
+function showForm(){
+  document.getElementById("formDiv").style.display="block";
+}
+
+// ================= INSTITUTION =================
+async function loadInstitutions(){
+  let res = await fetch("http://localhost:8080/auth/institutions");
+  let data = await res.json();
+
+  let html="";
+  data.forEach(i=>{
+    html+=`<tr>
+      <td>${i.instCode}</td>
+      <td>${i.institutionName}</td>
+      <td>${i.email}</td>
+      <td>${i.address}</td>
+      <td>
+        <button onclick="deleteInstitution('${i.institutionId}')" class="btn btn-danger btn-sm">Delete</button>
+      </td>
+    </tr>`;
+  });
+
+  instTable.innerHTML=html;
+  totalInstitutions.innerText=data.length;
+}
+async function deleteInstitution(id) {
+  if (confirm("Are you sure to delete?")) {
+    // URL-la id-ah anupunga
+    let res = await fetch(`http://localhost:8080/auth/institution/delete/${id}`, {
+      method: "DELETE"
+    });
+    
+    if (res.ok) {
+      alert("Deleted!");
+      loadInstitutions(); 
+    }
+  }
+}
+async function addInstitution() {
+  let data = {
+    instCode: document.getElementById('code').value,
+    institutionName: document.getElementById('instName').value, // instName nu unga id iruku
+    email: document.getElementById('email').value,
+    address: document.getElementById('address').value,
+    password: document.getElementById('password').value
+  };
+
+  try {
+    let response = await fetch("http://localhost:8080/auth/institution/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      // 1. Success message-ah show pannu
+      let msg = document.getElementById("successMsg");
+      msg.style.display = "block";
+
+      // 2. Oru 2 seconds kalichu form-ah close panni, message-ah hide pannu
+      setTimeout(() => {
+        document.getElementById("formDiv").style.display = "none"; // Form close aagum
+        msg.style.display = "none"; // Success message hide aagum
+        
+        // 3. Inputs-ah clear pannu (Next time open pannumbothu empty-ah iruka)
+        document.getElementById('code').value = "";
+        document.getElementById('instName').value = "";
+        document.getElementById('email').value = "";
+        document.getElementById('address').value = "";
+        document.getElementById('password').value = "";
+      }, 2000); // 2000ms = 2 seconds delay
+
+      // Table-ah refresh pannu
+      loadInstitutions();
+    }
+  } catch (error) {
+    console.error("Error adding institution:", error);
+    alert("Something went wrong!");
+  }
+}
+// ================= STUDENT =================
+async function loadStudents(){
+  let res = await fetch("http://localhost:8080/auth/students");
+  let data = await res.json();
+
+  let html="";
+  data.forEach(s=>{
+    html+=`<tr>
+      <td>${s.name}</td>
+      <td>${s.regNo}</td>
+      <td>${s.email}</td>
+      <td>${s.department}</td>
+      <td>${s.institutionName}</td>
+      <td>${s.dob}</td>
+      <td><button onclick="deleteStudent('${s.regNo}')" class="btn btn-danger btn-sm">Delete</button></td>
+    </tr>`;
+  });
+
+  studentTable.innerHTML=html;
+  totalStudents.innerText=data.length;
+}
+
+async function deleteStudent(regNo){
+  await fetch(`http://localhost:8080/auth/student/delete/${regNo}`,{method:"DELETE"});
+  loadStudents();
+}
+
+// ================= CERTIFICATE =================
+async function loadCertificates(){
+  let res = await fetch("http://localhost:8080/auth/certificates");
+  let data = await res.json();
+
+  let html="";
+  data.forEach(c=>{
+    html+=`<tr>
+      <td>${c.name}</td>
+      <td>${c.regNo}</td>
+      <td>${c.hash}</td>
+      <td><img src="data:image/png;base64,${c.qrCodePath}" width="60"/></td>
+    
+      <td><button class="btn btn-primary btn-sm" onclick="downloadCert(${c.id})">Download</button></td>
+                    
+    </tr>`;
+  });
+
+  certTable.innerHTML=html;
+  totalCertificates.innerText=data.length;
+}
+
+// ================= VERIFICATION =================
+async function loadVerifications(){
+  let res = await fetch("http://localhost:8080/auth/verifications");
+  let data = await res.json();
+
+  let html="";
+  data.forEach(v=>{
+    html+=`<tr>
+      <td>${v.verifierEmail}</td>
+      <td>${v.verifierName}</td>
+      <td>${v.name}</td>
+      <td>${v.institutionName || '-'}</td>
+      <td>${v.verifiedAt}</td>
+      <td><span class="badge ${v.status==='VALID'?'bg-success':'bg-danger'}">${v.status}</span></td>
+    </tr>`;
+  });
+
+  verifyTable.innerHTML=html;
+}
+
+// ================= AUDIT =================
+async function loadAuditLogs(){
+  let res = await fetch("http://localhost:8080/auth/verifications");
+  let data = await res.json();
+
+  let html="";
+  data.forEach(v=>{
+    html+=`<tr>
+      <td>${v.institutionName || '-'}</td>
+      <td>${v.verifierName}</td>
+    </tr>`;
+  });
+
+  auditTable.innerHTML=html;
+}
+// 🔥 DOWNLOAD FUNCTION: Ithu thaan file-ai backend-la irunthu fetch pannum
+function downloadCert(id) {
+    if(!id) {
+        alert("Certificate ID not found!");
+        return;
+    }
+    // Backend API-ku direct-ah redirect pannum pothu download trigger aagum
+    window.location.href = `http://localhost:8080/auth/certificate/download/${id}`;
+}
+function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+// INIT LOAD
+loadInstitutions();
+loadStudents();
+loadCertificates();
+loadVerifications();
+loadAuditLogs();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Learn More</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.role-box {
+  border-radius: 15px;
+  padding: 20px;
+  transition: 0.3s;
+}
+
+.role-box:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+h4 {
+      color: #4b3cc4;
+    }
+</style>
+</head>
+<body>
+<div class="container py-5">
+<h2 class="text-center mb-4">System Explanation</h2>
+<div class="row">
+  <div class="col-md-12  py-3">
+<div class="role-box border">
+<h4>How System Works</h4>
+ <p>
+Institution uploads certificate → system generates hash + QR code. This ensures originality.
+</p>
+<p>
+Verifier scans QR → system compares hash → shows valid or fake.
+</p> 
+</div>
+</div>
+<div class="col-md-6">
+<div class="role-box border">
+<h4>Admin</h4>
+<p>
+Admin controls system, users, and monitors activities.
+</p>
+<p>
+Admin login panni full system manage pannuvanga and security maintain pannuvanga.
+</p>
+</div>
+</div>
+<div class="col-md-6">
+<div class="role-box border">
+<h4>Institution</h4>
+<p>
+Institution login panni certificate upload pannuvanga.
+</p>
+<p>
+Upload panna aprm hash + QR generate aagum for security.
+</p>
+</div>
+</div>
+<div class="col-md-6 mt-3">
+<div class="role-box border">
+<h4>Student</h4>
+<p>
+Student login panni certificate view/download pannalam.
+</p>
+<p>
+QR share panni easy ah verification panalaam.
+</p>
+</div>
+</div>
+<div class="col-md-6 mt-3">
+<div class="role-box border">
+<h4>Verifier</h4>
+<p>
+Verifier QR scan pannuvanga or ID enter pannuvanga.
+</p>
+<p>
+System hash check panni certificate valid/fake nu sollum.
+</p>
+</div>
+</div>
+<div class="col-md-6 mt-3">
+<div class="role-box border">
+<h4>Security Advantages</h4>
+<ul>
+<li>Hash based tamper detection</li>
+<li>QR instant verification</li>
+<li>Role-based access</li>
+<li>Centralized secure storage</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<button class="btn btn-primary mb-3" onclick="goBack()">⬅ Back</button>
+
+<script>
+function goBack() {
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

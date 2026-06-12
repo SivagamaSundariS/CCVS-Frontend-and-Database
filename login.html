@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login - CertVerify</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  height: 100vh;
+  background: linear-gradient(to right, #e0c3fc, #8ec5fc);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Card */
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+/* Title */
+.login-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+.form-control, .form-select {
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* Button */
+.btn-login {
+  background: linear-gradient(to right, purple, blue);
+  color: white;
+  border-radius: 25px;
+  padding: 10px;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-login:hover {
+  background: linear-gradient(to right, #ff4ecd, #5f9cff);
+  transform: scale(1.05);
+}
+
+.back-btn {
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  margin-top: 15px;
+  color: #333;
+}
+</style>
+</head>
+
+<body>
+<!-- LOGIN FORM -->
+ <form class="login-card" id="loginForm">
+ <div class="login-title">🔐 Login</div>
+<!-- EMAIL -->
+  <label>Email</label>
+  <input type="email" id="email" class="form-control mb-3" placeholder="Enter Email" required>
+<!-- PASSWORD -->
+  <label>Password</label>
+  <input type="password" id="password" class="form-control mb-3" placeholder="Enter Password" required>
+<!-- ROLE -->
+  <label>Select Role</label>
+  <select id="role" class="form-select mb-3" required>
+    <option value="">Select Role</option>
+    <option value="ADMIN">Admin</option>
+    <option value="INSTITUTION">Institution</option>
+    <option value="STUDENT">Student</option>
+    <option value="VERIFIER">Verifier</option>
+  </select>
+<!-- LOGIN BUTTON -->
+  <button class="btn-login w-100" type="submit">Login</button>
+<a href="index.html" class="back-btn">⬅ Back</a>
+</form>
+
+<!-- SCRIPT -->
+<script>
+document.getElementById("loginForm").onsubmit = async function(e){
+  e.preventDefault();
+
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
+  let role = document.getElementById("role").value;
+
+  let data = {
+    email: email,
+    password: password,
+    role: role
+  };
+
+  try {
+    let res = await fetch("http://localhost:8080/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    let msg = await res.text();
+    alert(msg);
+
+    // ✅ STORE EMAIL ONLY FOR INSTITUTION
+    if(msg.includes("INSTITUTION")){
+      localStorage.setItem("instEmail", email); // ⭐ முக்கியம்
+      window.location.href = "institutionlogin.html";
+    }
+    else if(msg.includes("ADMIN")){
+      window.location.href = "admin.html";
+    }
+    else if(msg.includes("STUDENT")){
+      window.location.href = "studentlogin.html";
+    }
+    else if(msg.includes("VERIFIER")){
+      window.location.href = "verifierlogin.html";
+    }
+    else {
+      alert("Invalid Login ❌");
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Server Error ❌");
+  }
+};
+</script>
+
+</body>
+</html>
